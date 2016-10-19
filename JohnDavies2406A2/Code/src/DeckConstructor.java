@@ -93,9 +93,6 @@ public class DeckConstructor {
         // Removing a particular card that stored unusual values... Does not compromise the deck however
         deck.remove(deck.size() - 2);
 
-        // Shuffle the deck
-        //Collections.shuffle(deck);
-
         return deck;
     }
 }

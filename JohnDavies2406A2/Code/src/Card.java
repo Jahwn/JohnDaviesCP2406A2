@@ -12,11 +12,14 @@ public abstract class Card {
     public String name;
     public String imageName;
     Icon image;
+    ImageIcon imageIcon;
 
     Card(String name, String imageName) {
         this.name = name;
         this.imageName = imageName;
-        this.image = new ImageIcon("images/" + imageName);
+        //this.image = new ImageIcon("images/" + imageName);
+        this.imageIcon = new ImageIcon(new ImageIcon("images/" + imageName).getImage().getScaledInstance(150, 210, Image.SCALE_DEFAULT));
+        this.image = imageIcon;
     }
 
     public void frame() {

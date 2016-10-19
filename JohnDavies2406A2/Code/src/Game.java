@@ -8,6 +8,7 @@
  */
 
 import javax.swing.*;
+import java.awt.*;
 import java.lang.*;
 import java.util.*;
 
@@ -37,16 +38,14 @@ public class Game {
 
         for(Card c: deck) {
             if (!c.getCategory().equals("N/A")) {
-                c.imageName = "Slide" + x + ".jpg";
+                c.imageIcon = new ImageIcon(new ImageIcon("images/Slide" + x + ".jpg").getImage().getScaledInstance(200, 200, Image.SCALE_DEFAULT));
+                c.image = c.imageIcon;
                 x++;
             }
         }
 
-        for(Card c: deck) {
-            System.out.println(c.getName() + " " + c.imageName);
-        }
-
-        deck.get(54).frame();
+        // Shuffle the deck
+        //Collections.shuffle(deck);
 
         // Will contain current category
         String category = "No category";
