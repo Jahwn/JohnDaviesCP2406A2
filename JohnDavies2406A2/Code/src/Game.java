@@ -69,7 +69,7 @@ public class Game {
 
         // Assigning cards to players
         for (Player s: players) {
-            while(s.pCards.size() < 8) {
+            while(s.pCards.size() < 15) {
                 s.pCards.add(deck.get(0));
                 deck.remove(0);
             }

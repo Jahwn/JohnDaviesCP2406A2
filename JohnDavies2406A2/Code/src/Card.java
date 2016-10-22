@@ -18,7 +18,7 @@ public abstract class Card {
         this.name = name;
         this.imageName = imageName;
         //this.image = new ImageIcon("images/" + imageName);
-        this.imageIcon = new ImageIcon(new ImageIcon("images/" + imageName).getImage().getScaledInstance(150, 210, Image.SCALE_DEFAULT));
+        this.imageIcon = new ImageIcon(new ImageIcon("images/" + imageName).getImage().getScaledInstance(135, 189, Image.SCALE_DEFAULT));
         this.image = imageIcon;
     }
 

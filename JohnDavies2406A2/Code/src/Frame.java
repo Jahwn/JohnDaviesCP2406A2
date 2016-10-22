@@ -8,7 +8,7 @@ public class Frame extends JFrame {
     public Frame(String title, int gridRows, int gridCols) {
         super(title);
         setSize(new Dimension(900,900));
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLayout(new GridLayout(gridRows, gridCols));
     }
 }

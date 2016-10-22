@@ -1,5 +1,9 @@
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
@@ -23,16 +27,20 @@ public class Player {
 
     Scanner reader = new Scanner(System.in);
 
-    public Card playerTurn() {
-        if (pCards.size() != 0) {
-            Frame frame = new Frame("Select a card", 3, 1);
-            JPanel cardDisplay = new JPanel();
-            cardDisplay.setLayout(new GridLayout(3,5));
-            JLabel label = new JLabel("EXAMPLE", SwingConstants.CENTER);
-            JPanel inputOptions = new JPanel();
+    public static Card cardChoice;
+    public static Boolean choiceMade = false;
 
-            cardDisplay.setLayout(new GridLayout(3,5));
-            Card cardChoice = null;
+    public Card playerTurn() {
+        cardChoice = null;
+        choiceMade = false;
+        if (pCards.size() != 0) {
+            Frame frame = new Frame("Select a card", 2, 1);
+            JPanel cardDisplay = new JPanel();
+            JLabel label = new JLabel("EXAMPLE", SwingConstants.CENTER);
+            //JPanel inputOptions = new JPanel();
+
+            cardDisplay.setLayout(new FlowLayout());
+            label.setPreferredSize(new Dimension(900,200));
             int n = 0;
             System.out.println("Your card(s):");
 
@@ -40,11 +48,11 @@ public class Player {
             boolean containsMagnetite = false;
             for (Card c: pCards) {
                 JButton cImage = new JButton(c.image);
-                cImage.setSize(new Dimension(150,210));
+                //cImage.setSize(new Dimension(150,210));
                 JPanel cPanel = new JPanel();
                 cPanel.add(cImage);
                 cPanel.setSize(cImage.getWidth(), cImage.getHeight());
-                cardDisplay.add(cPanel);
+                cardDisplay.add(cImage);
                 if (c.getName().equals("The Geophysicist")) {
                     containsTheGeophysicist = true;
                 }
@@ -53,15 +61,25 @@ public class Player {
                 }
                 System.out.println(n + " " + c.getName());
                 n++;
+
+                cImage.addActionListener(new ActionListener() {
+                    @Override
+                    // This method is executed when the button is pressed
+                    public void actionPerformed(ActionEvent e) {
+                        // Change the button text
+                        cardChoice = c;
+                        choiceMade = true;
+                        frame.dispose();
+                    }
+                });
             }
 
             frame.add(cardDisplay);
             frame.add(label);
-            frame.add(inputOptions);
             frame.setVisible(true);
 
             boolean inputValidSpecial = false;
-            boolean inputValid = false;
+
             if (containsMagnetite && containsTheGeophysicist) {
                 label.setText("***Your deck contains Magnetite and The Geophysicist***");
                 System.out.println("***Your deck contains Magnetite and The Geophysicist***" +
@@ -71,7 +89,6 @@ public class Player {
                     if (input.equals("y")) {
                         cardChoice = new MCard("[The Geophysicist & Magnetite]", "", 0.0, 0.0, 0.0, 0.0, 0.0);
                         inputValidSpecial = true;
-                        inputValid = true;
                     } else if (input.equals("n")) {
                         System.out.println("Continuing game as normal...");
                         inputValidSpecial = true;
@@ -83,31 +100,20 @@ public class Player {
                 }
             }
 
-            while (!inputValid) {
+            while (!choiceMade) {
                 label.setText("Select your card");
-                System.out.print("Enter 'p' to pass or choose card by typing the number next to their name: ");
-                String input = reader.next();
-                try {
-                    if (input.equals("p")) {
-                        cardChoice = null;
-                        playerPassed = true;
-                        inputValid = true;
-                    } else {
-                        cardChoice = pCards.get(Integer.parseInt(input));
-                        pCards.remove(Integer.parseInt(input));
-                        inputValid = true;
-                    }
-                } catch (Exception e) {
-                    System.out.println("\n" +
-                            "***Error: Please enter proper input***" +
-                            "\n");
-                }
+                choiceMade = checkChoice();
             }
-            frame.setVisible(false);
-            frame.dispose();
             return cardChoice;
         } else {
             return null;
+        }
+    }
+    public Boolean checkChoice() {
+        if (choiceMade) {
+            return true;
+        } else {
+            return false;
         }
     }
 }
