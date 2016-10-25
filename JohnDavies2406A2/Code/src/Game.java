@@ -22,6 +22,7 @@ public class Game {
     public static ArrayList<Player> players = new ArrayList<Player>();
     public static ArrayList<Card> deck = new ArrayList<Card>();
     public static CardDataFetcher cardData = new CardDataFetcher();
+    public static Frame frame = new Frame("Super Trumps Card Game");
 
     public static void main(String[] args) {
 
@@ -69,7 +70,7 @@ public class Game {
 
         // Assigning cards to players
         for (Player s: players) {
-            while(s.pCards.size() < 15) {
+            while(s.pCards.size() < 20) {
                 s.pCards.add(deck.get(0));
                 deck.remove(0);
             }
@@ -87,6 +88,12 @@ public class Game {
 
         // This is where players take their turns
         while (running) {
+            JPanel mainPanel = new JPanel();
+            mainPanel.setLayout(new GridLayout(2, 2));
+            JLabel logLabel = new JLabel("Round " + round);
+            logLabel.setFont(new Font("Arial", Font.PLAIN, 100));
+
+            frame.setVisible(true);
             // A label is used to add a breaking point for the program when a winning condition is satisfied
             // This is using a normal break on the for loop right below would only make the current loop the last
             // The for loop would still continue until the last player has been iterated through
@@ -138,7 +145,7 @@ public class Game {
 
                 while (!turnValid) {
                     // Bring up interface for card selection
-                    Card playerChoice = checkPlayerChoice(p);
+                    Card playerChoice = p.checkPlayerChoice(p);
 
                     // If the player has chosen to pass
                     if (playerChoice == null) {
@@ -353,50 +360,7 @@ public class Game {
         }
         System.out.println("------------------****------------------");
     }
-    public static Card checkPlayerChoice(Player p) {
-        Scanner reader = new Scanner(System.in);
-        Card playerChoice = p.playerTurn();
-        boolean choiceValid = false;
-            // This while loop enables players to go back on their choice of cards
-            // If they don't like their card's stats, they can go back and choose again
-        while (!choiceValid) {
-            if (playerChoice != null && !playerChoice.getName().equals("[The Geophysicist & Magnetite]")) {
 
-                Boolean isTrumpCard = cardData.isTrumpCard(playerChoice.name);
-
-                System.out.println(playerChoice.getName() + "'s data:");
-
-                if (isTrumpCard) {
-                    System.out.println("Category: " + playerChoice.getCategory());
-                } else {
-                    System.out.println("0 Hardness (averaged): " + playerChoice.getHardness() +
-                            "\n1 Specific gravity (averaged): " + playerChoice.getSpecificGravity() +
-                            "\n2 Cleavage: " + cardData.getCleavageString(playerChoice.getCleavage()) +
-                            "\n3 Crustal abundance: " + cardData.getCrustalAbundanceString(playerChoice.getCrustalAbundance()) +
-                            "\n4 Economic value: " + cardData.getEconomicValueString(playerChoice.getEconomicValue()));
-                }
-
-                System.out.print("Do you want to proceed with this card? Press 'y', or 'n' to proceed: ");
-
-                String choice = reader.next();
-
-                if (choice.equals("y")) {
-                    choiceValid = true;
-                } else if (choice.equals("n")) {
-                    System.out.println("Select another card or pass.");
-                    p.pCards.add(playerChoice);
-                    playerChoice = p.playerTurn();
-                } else {
-                    System.out.println("\n" +
-                            "***Error: Please enter proper input***" +
-                    "\n");
-                }
-            } else {
-                return playerChoice;
-            }
-        }
-        return playerChoice;
-    }
     public static int playersPassed() {
         int playersPassed = 0;
         for (Player p: players) {
