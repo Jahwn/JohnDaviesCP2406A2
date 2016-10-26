@@ -27,23 +27,20 @@ public class Player {
 
     Scanner reader = new Scanner(System.in);
 
-    public static Card cardChoice;
-    public static Boolean choiceMade = false;
-    public int n;
-    public static CardDataFetcher cardData = new CardDataFetcher();
+    public volatile Card cardChoice;
+    public volatile Boolean choiceMade = false;
+    public volatile CardDataFetcher cardData = new CardDataFetcher();
 
     public Card playerTurn() {
         cardChoice = null;
         choiceMade = false;
-        n = 0;
+        int n = 0;
         if (pCards.size() != 0) {
-            Frame frame = new Frame("Player " + playerNo + "'s hand");
+            Frame frame = new Frame("");
+            frame.setTitle("Player " + playerNo + "'s hand");
             JPanel cardDisplay = new JPanel();
-            JLabel label = new JLabel("EXAMPLE", SwingConstants.CENTER);
 
             cardDisplay.setLayout(new FlowLayout());
-            label.setPreferredSize(new Dimension(900,200));
-            System.out.println("Your card(s):");
 
             boolean containsTheGeophysicist = false;
             boolean containsMagnetite = false;
@@ -56,8 +53,8 @@ public class Player {
             pass.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    cardChoice = null;
                     choiceMade = true;
+                    cardChoice = null;
                     frame.dispose();
                 }
             });
@@ -71,29 +68,28 @@ public class Player {
                 if (c.getName().equals("Magnetite")) {
                     containsMagnetite = true;
                 }
-                System.out.println(n + " " + c.getName());
+                //System.out.println(n + " " + c.getName());
 
                 cImage.addActionListener(new ActionListener() {
                     @Override
                     // This method is executed when the button is pressed
                     public void actionPerformed(ActionEvent e) {
-                        // Change the button text
-                        cardChoice = c;
                         choiceMade = true;
+                        cardChoice = c;
+                        System.out.println(cardChoice.getName());
                         frame.dispose();
                     }
                 });
                 n++;
             }
 
-
             frame.add(cardDisplay);
-            frame.setVisible(true);
 
-            boolean inputValidSpecial = false;
+            /*boolean inputValidSpecial = false;
 
             if (containsMagnetite && containsTheGeophysicist) {
-                frame.remove(cardDisplay);
+                JLabel label = new JLabel();
+                frame.removeAll();
                 label.setText("Your deck contains Magnetite and The Geophysicist");
                 label.setFont(new Font("Arial", Font.BOLD, 20));
                 frame.add(label);
@@ -115,17 +111,106 @@ public class Player {
                                 "\n");
                     }
                 }
-            }
+            }*/
+
+            frame.setVisible(true);
 
             while (!choiceMade) {
-                label.setText("Select your card");
-                choiceMade = checkChoice();
             }
+
+            System.out.println(choiceMade);
+
             return cardChoice;
         } else {
             return null;
         }
     }
+
+    public volatile Boolean choice = true;
+    public JButton yes = new JButton("Yes");
+    public JButton no = new JButton("No");
+
+    public Card checkPlayerChoice(Player p) {
+        Card playerChoice = p.playerTurn();
+
+        boolean choiceValid = false;
+        // This while loop enables players to go back on their choice of cards
+        // If they don't like their card's stats, they can go back and choose again
+        while (!choiceValid) {
+            choiceMade = false;
+            JLabel cardInfo = new JLabel("", SwingConstants.CENTER);
+
+            if (playerChoice != null) {
+                Frame frame = new Frame("");
+                frame.setTitle(playerChoice.getName() + "'s data");;
+                frame.setLayout(new GridLayout(3,1));
+
+                JPanel top = new JPanel();
+                JLabel cardIcon = new JLabel(playerChoice.image);
+                top.add(cardIcon, BorderLayout.WEST);
+                top.add(cardInfo, BorderLayout.EAST);
+                frame.add(top);
+
+                JLabel label = new JLabel("Continue with Selection?", SwingConstants.CENTER);
+                frame.add(label);
+
+                JPanel bottom = new JPanel();
+                bottom.add(yes);
+                bottom.add(no);
+                frame.add(bottom);
+
+                yes.addActionListener(new ActionListener() {
+                    @Override
+                    // This method is executed when the button is pressed
+                    public void actionPerformed(ActionEvent e) {
+                        choice = true;
+                        choiceMade = true;
+                        frame.dispose();
+                    }
+                });
+                no.addActionListener(new ActionListener() {
+                    @Override
+                    // This method is executed when the button is pressed
+                    public void actionPerformed(ActionEvent e) {
+                        choice = false;
+                        choiceMade = true;
+                        frame.dispose();
+                    }
+                });
+
+                frame.setVisible(true);
+            }
+
+            if (playerChoice != null && !playerChoice.getName().equals("[The Geophysicist & Magnetite]")) {
+
+                Boolean isTrumpCard = cardData.isTrumpCard(playerChoice.name);
+
+                if (isTrumpCard) {
+                    System.out.println("Category: " + playerChoice.getCategory());
+
+                } else {
+
+                    cardInfo.setText("<html>Hardness (averaged): " + playerChoice.getHardness() +
+                            "<br>Specific gravity (averaged): " + playerChoice.getSpecificGravity() +
+                            "<br>Cleavage: " + cardData.getCleavageString(playerChoice.getCleavage()) +
+                            "<br>Crustal abundance: " + cardData.getCrustalAbundanceString(playerChoice.getCrustalAbundance()) +
+                            "<br>Economic value: " + cardData.getEconomicValueString(playerChoice.getEconomicValue()) + "</html>");
+                }
+
+                while(!choiceMade) {
+                }
+
+                if (choice) {
+                    p.pCards.remove(playerChoice);
+                    choiceValid = true;
+                } else {
+                    playerChoice = p.playerTurn();
+                }
+            }
+        }
+        return playerChoice;
+    }
+
     public Boolean checkChoice() {
         if (choiceMade) {
             return true;
@@ -134,49 +219,6 @@ public class Player {
         }
     }
 
-    public static Card checkPlayerChoice(Player p) {
-        Scanner reader = new Scanner(System.in);
-        Card playerChoice = p.playerTurn();
-        boolean choiceValid = false;
-        // This while loop enables players to go back on their choice of cards
-        // If they don't like their card's stats, they can go back and choose again
-        while (!choiceValid) {
-            if (playerChoice != null && !playerChoice.getName().equals("[The Geophysicist & Magnetite]")) {
-
-                Boolean isTrumpCard = cardData.isTrumpCard(playerChoice.name);
-
-                System.out.println(playerChoice.getName() + "'s data:");
-
-                if (isTrumpCard) {
-                    System.out.println("Category: " + playerChoice.getCategory());
-                } else {
-                    System.out.println("0 Hardness (averaged): " + playerChoice.getHardness() +
-                            "\n1 Specific gravity (averaged): " + playerChoice.getSpecificGravity() +
-                            "\n2 Cleavage: " + cardData.getCleavageString(playerChoice.getCleavage()) +
-                            "\n3 Crustal abundance: " + cardData.getCrustalAbundanceString(playerChoice.getCrustalAbundance()) +
-                            "\n4 Economic value: " + cardData.getEconomicValueString(playerChoice.getEconomicValue()));
-                }
-
-                System.out.print("Do you want to proceed with this card? Press 'y', or 'n' to proceed: ");
-
-                String choice = reader.next();
-
-                if (choice.equals("y")) {
-                    choiceValid = true;
-                } else if (choice.equals("n")) {
-                    System.out.println("Select another card or pass.");
-                    playerChoice = p.playerTurn();
-                } else {
-                    System.out.println("\n" +
-                            "***Error: Please enter proper input***" +
-                            "\n");
-                }
-            } else {
-                return playerChoice;
-            }
-        }
-        return playerChoice;
-    }
     public void removeCard(int n) {
         pCards.remove(n);
     }
