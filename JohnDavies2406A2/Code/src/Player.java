@@ -60,6 +60,7 @@ public class Player {
             });
 
             for (Card c: pCards) {
+                //Every time the loop iterates through a card, a button is generated for that card and is then added to cardDisplay
                 JButton cImage = new JButton(c.image);
                 cardDisplay.add(cImage);
                 if (c.getName().equals("The Geophysicist")) {
@@ -145,6 +146,8 @@ public class Player {
                 frame.setTitle(playerChoice.getName() + "'s data");;
                 frame.setLayout(new GridLayout(3,1));
 
+                cardInfo.setFont(frame.font);
+
                 JPanel top = new JPanel();
                 JLabel cardIcon = new JLabel(playerChoice.image);
                 top.add(cardIcon, BorderLayout.WEST);
@@ -152,6 +155,7 @@ public class Player {
                 frame.add(top);
 
                 JLabel label = new JLabel("Continue with Selection?", SwingConstants.CENTER);
+                label.setFont(frame.font);
                 frame.add(label);
 
                 JPanel bottom = new JPanel();
@@ -179,6 +183,9 @@ public class Player {
                 });
 
                 frame.setVisible(true);
+            } else {
+                choiceValid = true;
+                return playerChoice;
             }
 
             if (playerChoice != null && !playerChoice.getName().equals("[The Geophysicist & Magnetite]")) {
@@ -209,14 +216,6 @@ public class Player {
             }
         }
         return playerChoice;
-    }
-
-    public Boolean checkChoice() {
-        if (choiceMade) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void removeCard(int n) {

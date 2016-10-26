@@ -9,6 +9,8 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.*;
 import java.util.*;
 
@@ -22,7 +24,7 @@ public class Game {
     public static ArrayList<Player> players = new ArrayList<Player>();
     public static ArrayList<Card> deck = new ArrayList<Card>();
     public static CardDataFetcher cardData = new CardDataFetcher();
-    public static Frame frame = new Frame("Super Trumps Card Game");
+    public static volatile boolean choice = false;
 
     public static void main(String[] args) {
 
@@ -46,7 +48,7 @@ public class Game {
         }
 
         // Shuffle the deck
-        //Collections.shuffle(deck);
+        Collections.shuffle(deck);
 
         // Will contain current category
         String category = "No category";
@@ -70,7 +72,7 @@ public class Game {
 
         // Assigning cards to players
         for (Player s: players) {
-            while(s.pCards.size() < 20) {
+            while(s.pCards.size() < 8) {
                 s.pCards.add(deck.get(0));
                 deck.remove(0);
             }
@@ -88,12 +90,8 @@ public class Game {
 
         // This is where players take their turns
         while (running) {
-            JPanel mainPanel = new JPanel();
-            mainPanel.setLayout(new GridLayout(2, 2));
-            JLabel logLabel = new JLabel("Round " + round);
-            logLabel.setFont(new Font("Arial", Font.PLAIN, 100));
 
-            frame.setVisible(true);
+            //frame.setVisible(true);
             // A label is used to add a breaking point for the program when a winning condition is satisfied
             // This is using a normal break on the for loop right below would only make the current loop the last
             // The for loop would still continue until the last player has been iterated through
@@ -106,6 +104,8 @@ public class Game {
                     turnValid = true;
                 }
 
+                JLabel log = new JLabel();
+
                 // Check the number of players who have passed
                 int playersPassed = playersPassed();
 
@@ -114,9 +114,9 @@ public class Game {
                     // If all but 1 player has passed, reset the category and announce the winner of the round
                     if (playersPassed == playerCount - 1) {
                         category = noCategory;
-                        System.out.println("----------------------------------------" +
-                                "\nPlayer " + p.playerNo + " won round " + round +
-                                "\n----------------------------------------");
+                        log.setText("<html>----------------------------------------" +
+                                "<br>Player " + p.playerNo + " won round " + round +
+                                "<br>----------------------------------------</html>");
                         // Move to the next round
                         round++;
                         roundStarted = false;
@@ -125,25 +125,86 @@ public class Game {
 
                 // If this is a new round, and the player is still in the game, announce the new round
                 if (!roundStarted && p.isPlaying) {
-                    System.out.println("----------------------------------------" +
-                            "\nRound " + round +
-                            "\n----------------------------------------");
                     // Because this is a new round, all players who have passed are now back in
                     bringBackPlayers();
                 }
 
                 // If this player has passed, skip this turn
                 if (p.playerPassed) {
-                    System.out.println("Player " + p.playerNo + " is out of the round");
                     turnValid = true;
                 } else {
                     // Because the program thinks winning players have passed, a check to see if they're still playing is needed
                     if (p.isPlaying) {
-                        System.out.println("Player " + p.playerNo + "'s turn");
                     }
                 }
 
                 while (!turnValid) {
+                    //This frame will show only when the player's turn is valid as in whether or not they've passed or run out of cards
+                    choice = false;
+                    Frame frame = new Frame("Player " + p.playerNo + "'s turn");
+                    frame.setLayout(new GridLayout(1,2));
+                    JPanel panelWest = new JPanel();
+                    panelWest.setLayout(new GridLayout(4,1));
+
+                    JPanel panelEast = new JPanel();
+                    panelEast.setLayout(new GridLayout(3,1));
+
+                    JLabel roundLabel = new JLabel("Round " + round, SwingConstants.CENTER);
+                    roundLabel.setFont(frame.font);
+                    panelEast.add(roundLabel);
+
+                    String playerStats = "<html>" + playerStates();
+
+                    System.out.println(playerStats);
+
+                    playerStats = playerStats + "</html>";
+
+                    JLabel playerStatuses = new JLabel(playerStats, SwingConstants.CENTER);
+                    playerStatuses.setFont(frame.font);
+                    panelEast.add(playerStatuses);
+
+                    JLabel remainingCards = new JLabel("Cards remaining = " + p.pCards.size(), SwingConstants.CENTER);
+                    remainingCards.setFont(frame.font);
+                    panelEast.add(remainingCards);
+
+                    JButton proceed = new JButton("Continue turn?");
+                    proceed.setSize(new Dimension(100,100));
+                    proceed.setFont(frame.font);
+                    proceed.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            choice = true;
+                            frame.dispose();
+                        }
+                    });
+
+                    JLabel cardTrumps = new JLabel("<html>0 Hardness<br>1 Specific gravity<br>2 Cleavage<br>3 Crustal abundance<br>4 Economic value");
+                    JLabel trumpValue = new JLabel("", SwingConstants.CENTER);
+                    trumpValue.setFont(frame.font);
+                    JLabel currentTrump = new JLabel("Current category is = " + noCategory, SwingConstants.CENTER);
+                    String tableCard = "Card on table = none";
+                    if (!table.getName().equals("No card")) {
+                        tableCard = "Card on table = " + table.getName();
+                        currentTrump.setText("Current category is = " + category);
+                        trumpValue.setText(category + " value to beat = " + getStringValue(category, categoryValue));
+                    }
+                    currentTrump.setFont(frame.font);
+                    if (!category.equals(noCategory)) {
+                    }
+                    JLabel cardOnTable = new JLabel(tableCard, SwingConstants.CENTER);
+                    cardOnTable.setFont(frame.font);
+                    panelWest.add(currentTrump);
+                    panelWest.add(cardOnTable);
+                    panelWest.add(trumpValue);
+                    panelWest.add(proceed);
+
+                    frame.add(panelWest);
+                    frame.add(panelEast);
+                    frame.setVisible(true);
+
+                    while(!choice) {
+                    }
+
                     // Bring up interface for card selection
                     Card playerChoice = p.checkPlayerChoice(p);
 
@@ -374,5 +435,33 @@ public class Game {
         for (Player p: players) {
             p.playerPassed = false;
         }
+    }
+    public static String playerStates() {
+        String playerStats = "";
+        for (Player p1 : players) {
+            String playerState;
+            if (!p1.isPlaying || p1.playerPassed) {
+                playerState = " isn't playing";
+            } else {
+                playerState = " is playing";
+            }
+            playerStats = playerStats + "<br>Player " + p1.playerNo + playerState;
+        }
+        return playerStats;
+    }
+    public static String getStringValue(String category, Double value) {
+        String valueToBeat = "";
+        if (category.equals("Hardness")) {
+            valueToBeat = Double.toString(value);
+        } else if (category.equals("Specific gravity")) {
+            valueToBeat = Double.toString(value);
+        } else if (category.equals("Cleavage")) {
+            valueToBeat = cardData.getCleavageString(value);
+        } else if (category.equals("Crustal abundance")) {
+            valueToBeat = cardData.getCrustalAbundanceString(value);
+        } else if (category.equals("Economic value")) {
+            valueToBeat = cardData.getEconomicValueString(value);
+        }
+        return valueToBeat;
     }
 }
